@@ -1,3 +1,4 @@
 node_modules
 data
 *.project
+/.DS_Store
