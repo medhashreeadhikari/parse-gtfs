@@ -67,13 +67,31 @@ const distFiles = [
   // "tripIdsToRouteIds.json",
 ];
 
+function copyFeedInfoToDist(parsedDir, distDir) {
+  // prefer feed_info.json (saved as feedInfo.json), fall back to calendar.json
+  const options = [
+    { src: "feed_info.json", dest: "feedInfo.json" },
+    { src: "calendar.json", dest: "calendar.json" },
+  ];
+  for (const { src, dest } of options) {
+    const srcPath = `${parsedDir}/${src}`;
+    if (fs.existsSync(srcPath)) {
+      fs.copyFileSync(srcPath, `${distDir}/${dest}`);
+      console.log(`Copied ${src} to ${dest}`);
+      return dest;
+    }
+  }
+  console.log("No feed_info.json or calendar.json found");
+  return null;
+}
+
 async function main() {
   assureDir(EXTRACTED_BASE_PATH);
   assureDir(PARSED_BASE_PATH);
   assureDir(DIST_BASE_PATH);
 
   // const agencies = fs.readdirSync(EXTRACTED_BASE_PATH);
-  const agencies = ["long_beach_transit"]; // can specify agencies here
+  const agencies = ["lbt",]; // can specify agencies here
   await unzipAll(RAW_BASE_PATH, EXTRACTED_BASE_PATH, agencies);
   for (const agency of agencies) {
     console.log(`Converting files for ${agency}`);
@@ -91,6 +109,7 @@ async function main() {
     await tripIdsToRouteIds.addTripIdsToRouteIds(parsedDir); // create new file that maps trips to routes
     await addCentersToRoutes.addCenters(parsedDir); // create new file that is easy to get route shape ids out of
     copyToDist(parsedDir, distDir); // copy dist files to dist folder
+    copyFeedInfoToDist(parsedDir, distDir); // feedInfo.json, or calendar.json if missing
     deleteFolder(parsedDir); // cleanup extracted files
 
     console.log();
