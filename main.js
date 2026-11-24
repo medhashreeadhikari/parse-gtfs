@@ -14,6 +14,7 @@ const routesWithStops = require("./routesWithStops");
 const routesWithShapeIds = require("./routesWithShapeIds");
 const addCentersToRoutes = require("./addCentersToRoutes");
 const tripIdsToRouteIds = require("./tripIdsToRouteIds");
+const parsedDB = require("./parsedDB");
 
 async function unzipAll(rawPath, extractedPath, selectedFilenames) {
   const filenames = fs.readdirSync(rawPath);
@@ -91,7 +92,7 @@ async function main() {
   assureDir(DIST_BASE_PATH);
 
   // const agencies = fs.readdirSync(EXTRACTED_BASE_PATH);
-  const agencies = ["lbt",]; // can specify agencies here
+  const agencies = ["septa",]; // can specify agencies here
   await unzipAll(RAW_BASE_PATH, EXTRACTED_BASE_PATH, agencies);
   for (const agency of agencies) {
     console.log(`Converting files for ${agency}`);
@@ -111,6 +112,7 @@ async function main() {
     copyToDist(parsedDir, distDir); // copy dist files to dist folder
     copyFeedInfoToDist(parsedDir, distDir); // feedInfo.json, or calendar.json if missing
     deleteFolder(parsedDir); // cleanup extracted files
+    await parsedDB.writeToDB(agency); // put data into the database
 
     console.log();
   }
