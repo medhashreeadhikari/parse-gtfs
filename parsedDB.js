@@ -20,6 +20,7 @@ async function writeJSONtoDB(connection, curr_agency) {
     const shapes = JSON.parse(fs.readFileSync(path.join(agency_folder, "shapes.json"), "utf8"));
 
     const [result] = await connection.execute(
+        // TODO: medhashree.parsed_gtfs_data to ensure correct table!!
         `INSERT INTO parsed_gtfs_data
         (agency_id, agency, routes, routesWithShapeIds, routesWithStops, shapes)
         VALUES (?, ?, ?, ?, ?, ?)`,
@@ -73,9 +74,10 @@ async function writeToDB(curr_agency) {
         const db_agency_ids = rows.map(row => row.agency_id); // get all agencies in db
 
         // NOTE: console.log, can delete or comment out
-        console.log(db_agency_ids); // confirm correct column is being accessed
+        console.log(`db_agency_ids : ${db_agency_ids}`); // confirm correct column is being accessed
 
         // if this parsed_agency exists already in the database:
+        // unique agency_ids
         if(db_agency_ids.includes(curr_agency)) {
             console.log(`parsed_agency '${curr_agency}' in database '${CURR_DB}'`);
             const [rows] = await connection.execute(
